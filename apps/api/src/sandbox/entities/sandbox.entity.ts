@@ -201,6 +201,7 @@ export class Sandbox {
     this.region = region
   }
 
+  // TODO: move to sandbox service
   public setBackupState(
     state: BackupState,
     backupSnapshot?: string | null,
