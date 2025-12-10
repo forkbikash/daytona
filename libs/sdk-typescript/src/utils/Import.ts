@@ -15,6 +15,7 @@ const loaderMap = {
   ObjectStorage: () => import('../ObjectStorage.js'),
   fs: (): Promise<typeof import('fs')> => import('fs'),
   'form-data': () => import('form-data'),
+  dotenv: () => import('dotenv'),
 }
 
 const requireMap = {
@@ -25,6 +26,7 @@ const requireMap = {
   'expand-tilde': () => require('expand-tilde'),
   fs: () => require('fs'),
   'form-data': () => require('form-data'),
+  dotenv: () => require('dotenv'),
 }
 
 const validateMap: Record<string, (mod: any) => boolean> = {
@@ -35,6 +37,7 @@ const validateMap: Record<string, (mod: any) => boolean> = {
   'expand-tilde': (mod: any) => typeof mod === 'function',
   fs: (mod: any) => typeof mod.createReadStream === 'function' && typeof mod.readFile === 'function',
   'form-data': (mod: any) => typeof mod === 'function',
+  dotenv: (mod: any) => typeof mod === 'function',
 }
 
 type ModuleMap = typeof loaderMap

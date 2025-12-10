@@ -25,6 +25,7 @@ import { VolumeService } from './Volume'
 import * as packageJson from '../package.json'
 import { processStreamingResponse } from './utils/Stream'
 import { getEnvVar, RUNTIME, Runtime } from './utils/Runtime'
+import importSync from 'import-sync'
 
 /**
  * Represents a volume mount for a Sandbox.
@@ -246,8 +247,9 @@ export class Daytona {
           !(this.jwtToken && this.organizationId && apiUrl && this.target))) &&
       RUNTIME !== Runtime.BROWSER
     ) {
-      if (RUNTIME === Runtime.NODE && typeof require !== 'undefined') {
-        const dotenv = require('dotenv')
+      console.log('RUNTIME:', RUNTIME)
+      if (RUNTIME === Runtime.NODE) {
+        const dotenv = importSync('dotenv')
         dotenv.config({ quiet: true })
         dotenv.config({ path: '.env.local', override: true, quiet: true })
       }
