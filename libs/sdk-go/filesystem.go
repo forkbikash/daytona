@@ -11,7 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
-	apiclient "github.com/daytonaio/apiclient"
+	apiclient "github.com/forkbikash/daytona/libs/api-client-go"
 )
 
 // FilePermissionsParams contains parameters for setting file permissions.

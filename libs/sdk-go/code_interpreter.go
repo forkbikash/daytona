@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	sdkerrors "github.com/daytonaio/sdk-go/errors"
+	sdkerrors "github.com/forkbikash/daytona/libs/sdk-go/errors"
 	"github.com/gorilla/websocket"
 )
 

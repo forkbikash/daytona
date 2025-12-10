@@ -5,10 +5,8 @@ A Go SDK for interacting with the Daytona API, providing a simple interface for 
 ## Installation
 
 ```bash
-go get github.com/daytonaio/sdk-go
+go get github.com/forkbikash/daytona/libs/sdk-go
 ```
-
-**Note:** This SDK requires the Daytona API client. If you're using this from outside the Daytona monorepo, ensure you have access to `github.com/daytonaio/apiclient`.
 
 ## Requirements
 
@@ -27,7 +25,7 @@ import (
 	"fmt"
 	"log"
 
-	daytona "github.com/daytonaio/sdk-go"
+	daytona "github.com/forkbikash/daytona/libs/sdk-go"
 )
 
 func main() {
@@ -65,7 +63,7 @@ func main() {
 The SDK can be configured using environment variables or by passing a configuration object:
 
 ```go
-import daytona "github.com/daytonaio/sdk-go"
+import daytona "github.com/forkbikash/daytona/libs/sdk-go"
 
 // Initialize with configuration
 client, err := daytona.NewDaytona(&daytona.Config{

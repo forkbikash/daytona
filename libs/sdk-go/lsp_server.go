@@ -9,7 +9,7 @@ import (
 	"context"
 	"fmt"
 
-	apiclient "github.com/daytonaio/apiclient"
+	apiclient "github.com/forkbikash/daytona/libs/api-client-go"
 )
 
 // LspLanguageID represents supported language server types.

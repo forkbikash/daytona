@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"strings"
 
-	apiclient "github.com/daytonaio/apiclient"
-	"github.com/daytonaio/sdk-go/codetoolbox"
+	apiclient "github.com/forkbikash/daytona/libs/api-client-go"
+	"github.com/forkbikash/daytona/libs/sdk-go/codetoolbox"
 )
 
 var (

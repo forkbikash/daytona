@@ -8,7 +8,7 @@ package daytona
 import (
 	"context"
 
-	apiclient "github.com/daytonaio/apiclient"
+	apiclient "github.com/forkbikash/daytona/libs/api-client-go"
 )
 
 // ScreenshotRegion defines coordinates for a screenshot region.

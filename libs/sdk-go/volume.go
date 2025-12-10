@@ -8,8 +8,8 @@ package daytona
 import (
 	"context"
 
-	apiclient "github.com/daytonaio/apiclient"
-	sdkerrors "github.com/daytonaio/sdk-go/errors"
+	apiclient "github.com/forkbikash/daytona/libs/api-client-go"
+	sdkerrors "github.com/forkbikash/daytona/libs/sdk-go/errors"
 )
 
 // Volume represents a Daytona Volume which is a shared storage volume for Sandboxes.

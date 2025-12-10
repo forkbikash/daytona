@@ -14,9 +14,9 @@ import (
 	"os"
 	"time"
 
-	apiclient "github.com/daytonaio/apiclient"
-	"github.com/daytonaio/sdk-go/codetoolbox"
-	sdkerrors "github.com/daytonaio/sdk-go/errors"
+	apiclient "github.com/forkbikash/daytona/libs/api-client-go"
+	"github.com/forkbikash/daytona/libs/sdk-go/codetoolbox"
+	sdkerrors "github.com/forkbikash/daytona/libs/sdk-go/errors"
 	"github.com/joho/godotenv"
 )
 
