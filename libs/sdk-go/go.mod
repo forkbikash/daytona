@@ -3,7 +3,7 @@ module github.com/daytonaio/sdk-go
 go 1.21
 
 require (
-	github.com/daytonaio/apiclient v0.0.0-00010101000000-000000000000
+	github.com/daytonaio/apiclient v0.1.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/joho/godotenv v1.5.1
 )
