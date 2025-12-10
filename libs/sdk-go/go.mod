@@ -3,7 +3,7 @@ module github.com/forkbikash/daytona/libs/sdk-go
 go 1.21
 
 require (
-	github.com/forkbikash/daytona/libs/api-client-go v0.2.0
+	github.com/forkbikash/daytona/libs/api-client-go v0.3.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/joho/godotenv v1.5.1
 )
