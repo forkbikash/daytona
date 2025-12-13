@@ -297,11 +297,13 @@ func (h *PtyHandle) readMessages() {
 }
 
 // createPtyWebSocket creates a WebSocket connection for PTY.
-func createPtyWebSocket(baseURL, sessionID, apiKey string) (*websocket.Conn, error) {
+func createPtyWebSocket(baseURL, sandboxID, sessionID, apiKey string) (*websocket.Conn, error) {
 	// Convert HTTP URL to WebSocket URL
 	wsURL := strings.Replace(baseURL, "https://", "wss://", 1)
 	wsURL = strings.Replace(wsURL, "http://", "ws://", 1)
-	wsURL = wsURL + "/process/pty/" + sessionID + "/connect"
+	// Ensure no trailing slash before adding path
+	wsURL = strings.TrimSuffix(wsURL, "/")
+	wsURL = wsURL + "/" + sandboxID + "/process/pty/" + sessionID + "/connect"
 
 	header := http.Header{}
 	if apiKey != "" {

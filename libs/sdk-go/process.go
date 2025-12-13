@@ -345,7 +345,7 @@ func (p *Process) ConnectPty(ctx context.Context, sessionID string, options PtyC
 	}
 
 	// Create WebSocket connection
-	ws, err := createPtyWebSocket(toolboxURL, sessionID, apiKey)
+	ws, err := createPtyWebSocket(toolboxURL, p.sandbox.ID, sessionID, apiKey)
 	if err != nil {
 		return nil, err
 	}
