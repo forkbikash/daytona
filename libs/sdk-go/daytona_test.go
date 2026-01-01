@@ -7,6 +7,9 @@ package daytona_test
 
 import (
 	"context"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	daytona "github.com/forkbikash/daytona/libs/sdk-go"
@@ -233,6 +236,181 @@ func TestCreateSandboxFromImage(t *testing.T) {
 
 	if sandbox.ID == "" {
 		t.Fatal("Expected sandbox to have an ID")
+	}
+}
+
+func TestCreateSandboxFromCustomDockerfile(t *testing.T) {
+	client := getTestClient(t)
+	ctx := context.Background()
+
+	// Create a dynamic image with custom dockerfile using Base
+	customImage := daytona.Base("python:3.12-slim").
+		RunCommands("apt-get update", "apt-get install -y curl").
+		Env(map[string]string{"MY_ENV": "test-value"}).
+		Workdir("/app")
+
+	sandbox, err := client.CreateFromImage(ctx, &daytona.CreateSandboxFromImageParams{
+		CreateSandboxBaseParams: daytona.CreateSandboxBaseParams{
+			Language: daytona.CodeLanguagePython,
+			Labels: map[string]string{
+				"test": "go-sdk-custom-dockerfile-test",
+			},
+		},
+		DynamicImage: customImage,
+	}, &daytona.CreateOptions{
+		Timeout: 180,
+	})
+	if err != nil {
+		t.Fatalf("Failed to create sandbox from custom dockerfile: %v", err)
+	}
+
+	t.Logf("Created sandbox from custom dockerfile: %s", sandbox.ID)
+
+	// Cleanup
+	defer func() {
+		if err := sandbox.Delete(ctx, 60); err != nil {
+			t.Logf("Failed to delete sandbox: %v", err)
+		}
+	}()
+
+	if sandbox.ID == "" {
+		t.Fatal("Expected sandbox to have an ID")
+	}
+
+	// Verify the dockerfile was generated correctly
+	dockerfile := customImage.Dockerfile()
+	if dockerfile == "" {
+		t.Error("Expected non-empty dockerfile")
+	}
+	if !strings.Contains(dockerfile, "FROM python:3.12-slim") {
+		t.Error("Expected dockerfile to contain base image")
+	}
+	if !strings.Contains(dockerfile, "RUN apt-get update") {
+		t.Error("Expected dockerfile to contain apt-get update command")
+	}
+	if !strings.Contains(dockerfile, "ENV MY_ENV=test-value") {
+		t.Error("Expected dockerfile to contain environment variable")
+	}
+	if !strings.Contains(dockerfile, "WORKDIR /app") {
+		t.Error("Expected dockerfile to contain workdir")
+	}
+}
+
+func TestCreateSandboxWithLocalFile(t *testing.T) {
+	client := getTestClient(t)
+	ctx := context.Background()
+
+	// Create a temporary file to add to the image
+	tmpDir := t.TempDir()
+	localFilePath := filepath.Join(tmpDir, "test_script.py")
+	fileContent := []byte(`print("Hello from custom dockerfile!")`)
+	if err := os.WriteFile(localFilePath, fileContent, 0644); err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+
+	// Create a dynamic image with AddLocalFile
+	customImage := daytona.Base("python:3.12-slim").
+		Workdir("/app").
+		AddLocalFile(localFilePath, "/app/test_script.py")
+
+	sandbox, err := client.CreateFromImage(ctx, &daytona.CreateSandboxFromImageParams{
+		CreateSandboxBaseParams: daytona.CreateSandboxBaseParams{
+			Language: daytona.CodeLanguagePython,
+			Labels: map[string]string{
+				"test": "go-sdk-add-local-file-test",
+			},
+		},
+		DynamicImage: customImage,
+	}, &daytona.CreateOptions{
+		Timeout: 180,
+	})
+	if err != nil {
+		t.Fatalf("Failed to create sandbox with local file: %v", err)
+	}
+
+	t.Logf("Created sandbox with local file: %s", sandbox.ID)
+
+	// Cleanup
+	defer func() {
+		if err := sandbox.Delete(ctx, 60); err != nil {
+			t.Logf("Failed to delete sandbox: %v", err)
+		}
+	}()
+
+	if sandbox.ID == "" {
+		t.Fatal("Expected sandbox to have an ID")
+	}
+
+	// Verify the dockerfile was generated correctly
+	dockerfile := customImage.Dockerfile()
+	if !strings.Contains(dockerfile, "COPY") {
+		t.Error("Expected dockerfile to contain COPY command")
+	}
+
+	// Verify the context list includes the local file
+	contextList := customImage.ContextList()
+	if len(contextList) == 0 {
+		t.Fatal("Expected context list to contain the local file")
+	}
+
+	found := false
+	for _, ctxFile := range contextList {
+		if ctxFile.SourcePath == localFilePath {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("Expected context list to contain the temp file path")
+	}
+}
+
+func TestCreateSandboxFromDebianSlimImage(t *testing.T) {
+	client := getTestClient(t)
+	ctx := context.Background()
+
+	// Create a DebianSlim image with pip packages
+	debianImage := daytona.DebianSlim("3.12").
+		PipInstall([]string{"requests", "numpy"}, nil)
+
+	sandbox, err := client.CreateFromImage(ctx, &daytona.CreateSandboxFromImageParams{
+		CreateSandboxBaseParams: daytona.CreateSandboxBaseParams{
+			Language: daytona.CodeLanguagePython,
+			Labels: map[string]string{
+				"test": "go-sdk-debian-slim-test",
+			},
+		},
+		DynamicImage: debianImage,
+	}, &daytona.CreateOptions{
+		Timeout: 180,
+	})
+	if err != nil {
+		t.Fatalf("Failed to create sandbox from DebianSlim image: %v", err)
+	}
+
+	t.Logf("Created sandbox from DebianSlim image: %s", sandbox.ID)
+
+	// Cleanup
+	defer func() {
+		if err := sandbox.Delete(ctx, 60); err != nil {
+			t.Logf("Failed to delete sandbox: %v", err)
+		}
+	}()
+
+	if sandbox.ID == "" {
+		t.Fatal("Expected sandbox to have an ID")
+	}
+
+	// Verify the dockerfile was generated correctly
+	dockerfile := debianImage.Dockerfile()
+	if dockerfile == "" {
+		t.Error("Expected non-empty dockerfile")
+	}
+	if !strings.Contains(dockerfile, "FROM python:") {
+		t.Error("Expected dockerfile to contain python base image")
+	}
+	if !strings.Contains(dockerfile, "pip install") {
+		t.Error("Expected dockerfile to contain pip install command")
 	}
 }
 

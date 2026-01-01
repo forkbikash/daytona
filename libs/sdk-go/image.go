@@ -7,6 +7,8 @@ package daytona
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 )
@@ -142,22 +144,44 @@ func (i *Image) DockerfileCommands(commands []string) *Image {
 
 // AddLocalFile adds a local file to the image.
 func (i *Image) AddLocalFile(localPath, remotePath string) *Image {
+	// Handle remotePath ending with '/' by appending the filename
+	if strings.HasSuffix(remotePath, "/") {
+		remotePath = remotePath + filepath.Base(localPath)
+	}
+
+	// Expand tilde in path
+	expandedPath := expandTilde(localPath)
+
 	i.contextList = append(i.contextList, Context{
-		SourcePath:  localPath,
-		ArchivePath: localPath,
+		SourcePath:  expandedPath,
+		ArchivePath: expandedPath,
 	})
-	i.dockerfile += fmt.Sprintf("COPY %s %s\n", localPath, remotePath)
+	i.dockerfile += fmt.Sprintf("COPY %s %s\n", expandedPath, remotePath)
 	return i
 }
 
 // AddLocalDir adds a local directory to the image.
 func (i *Image) AddLocalDir(localPath, remotePath string) *Image {
+	// Expand tilde in path
+	expandedPath := expandTilde(localPath)
+
 	i.contextList = append(i.contextList, Context{
-		SourcePath:  localPath,
-		ArchivePath: localPath,
+		SourcePath:  expandedPath,
+		ArchivePath: expandedPath,
 	})
-	i.dockerfile += fmt.Sprintf("COPY %s %s\n", localPath, remotePath)
+	i.dockerfile += fmt.Sprintf("COPY %s %s\n", expandedPath, remotePath)
 	return i
+}
+
+// expandTilde expands ~ to the user's home directory.
+func expandTilde(path string) string {
+	if strings.HasPrefix(path, "~/") {
+		home, err := os.UserHomeDir()
+		if err == nil {
+			return filepath.Join(home, path[2:])
+		}
+	}
+	return path
 }
 
 // Base creates an Image from an existing base image.

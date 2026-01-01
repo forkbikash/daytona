@@ -355,9 +355,15 @@ func (d *Daytona) createSandbox(ctx context.Context, snapshotParams *CreateSandb
 	// Handle image params
 	if imageParams != nil {
 		if imageParams.DynamicImage != nil {
-			// Use dynamic image
+			// Use dynamic image - process context files if any
+			contextHashes, err := d.processImageContext(ctx, imageParams.DynamicImage)
+			if err != nil {
+				return nil, err
+			}
+
 			buildInfo := apiclient.CreateBuildInfo{
 				DockerfileContent: imageParams.DynamicImage.dockerfile,
+				ContextHashes:     contextHashes,
 			}
 			createReq.BuildInfo = &buildInfo
 		} else if imageParams.Image != "" {
@@ -528,6 +534,44 @@ func (d *Daytona) getProxyToolboxURL(ctx context.Context) (string, error) {
 	}
 
 	return d.proxyToolboxURL, nil
+}
+
+// processImageContext uploads context files to object storage and returns their hashes.
+func (d *Daytona) processImageContext(ctx context.Context, image *Image) ([]string, error) {
+	contextList := image.ContextList()
+	if len(contextList) == 0 {
+		return []string{}, nil
+	}
+
+	// Get push access credentials
+	pushAccess, httpResp, err := d.objectStorageAPI.GetPushAccess(ctx).Execute()
+	if err != nil {
+		return nil, handleAPIError(err, httpResp)
+	}
+
+	// Create object storage client
+	objStorage, err := NewObjectStorage(ctx, ObjectStorageConfig{
+		EndpointURL:     pushAccess.StorageUrl,
+		AccessKeyID:     pushAccess.AccessKey,
+		SecretAccessKey: pushAccess.Secret,
+		SessionToken:    pushAccess.SessionToken,
+		BucketName:      pushAccess.Bucket,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Upload each context file
+	contextHashes := make([]string, 0, len(contextList))
+	for _, ctxFile := range contextList {
+		hash, err := objStorage.Upload(ctx, ctxFile.SourcePath, pushAccess.OrganizationId, ctxFile.ArchivePath)
+		if err != nil {
+			return nil, err
+		}
+		contextHashes = append(contextHashes, hash)
+	}
+
+	return contextHashes, nil
 }
 
 // handleAPIError handles API errors and converts them to SDK errors.
